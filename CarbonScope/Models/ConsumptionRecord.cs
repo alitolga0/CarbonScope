@@ -11,7 +11,8 @@
         public double Value { get; set; }        
         public DateTime RecordDate { get; set; } 
 
-        public double CalculatedCO2 => Value * ConsumptionType.Co2Factor;
+        public double CalculatedCO2 => ConsumptionType != null ? Value * ConsumptionType.Co2Factor : 0;
+
     }
 
 }

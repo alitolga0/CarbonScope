@@ -92,6 +92,28 @@ namespace CarbonScope.Repository
             _context.Entry(existingEntity).CurrentValues.SetValues(entity);
             await Task.CompletedTask;
         }
+        public TEntity? Get(Expression<Func<TEntity, bool>> filter,
+    Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
+        {
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (include != null)
+                query = include(query);
+
+            return query.FirstOrDefault(filter);
+        }
+
+        public List<TEntity> GetAll(Expression<Func<TEntity, bool>>? filter = null,
+            Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
+        {
+            IQueryable<TEntity> query = _context.Set<TEntity>();
+
+            if (include != null)
+                query = include(query);
+
+            return filter == null ? query.ToList() : query.Where(filter).ToList();
+        }
+
     }
 
 }

@@ -4,8 +4,10 @@ using CarbonScope.Models;
 using CarbonScope.Services.Abstract;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using CarbonScope.Core.Utilities.Result;
 
 namespace CarbonScope.Services.Concrete
@@ -21,7 +23,6 @@ namespace CarbonScope.Services.Concrete
             _unitOfWork = unitOfWork;
         }
 
-
         public async Task<IResult> Add(ConsumptionRecord entity)
         {
             await _repository.Add(entity);
@@ -36,15 +37,27 @@ namespace CarbonScope.Services.Concrete
             return new SuccessResult("Consumption record successfully deleted.");
         }
 
-        public IDataResult<List<ConsumptionRecord>> GetAll(Expression<Func<ConsumptionRecord, bool>> filter = null)
+        public IDataResult<List<ConsumptionRecord>> GetAll(Expression<Func<ConsumptionRecord, bool>>? filter = null)
         {
-            var data = _repository.GetAll(filter);
+            var data = _repository.GetAll(
+                filter,
+                include: query => query
+                    .Include(cr => cr.ConsumptionType)
+                    .Include(cr => cr.Facility)
+                    .ThenInclude(f => f.Company));
+
             return new SuccessDataResult<List<ConsumptionRecord>>(data, "Consumption records listed.");
         }
 
         public IDataResult<ConsumptionRecord> GetById(Guid id)
         {
-            var data = _repository.Get(x => x.Id == id);
+            var data = _repository.Get(
+                cr => cr.Id == id,
+                include: query => query
+                    .Include(cr => cr.ConsumptionType)
+                    .Include(cr => cr.Facility)
+                    .ThenInclude(f => f.Company));
+
             return new SuccessDataResult<ConsumptionRecord>(data, "Consumption record fetched.");
         }
 
